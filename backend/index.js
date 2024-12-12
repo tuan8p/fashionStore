@@ -8,20 +8,6 @@ app.use(cors());
 app.use(express.json());
 const port = 5000;
 
-// const config = {
-//     user: "sa",
-//     passwork:"1634",
-//     server: "localhost",
-//     database: "LOLYPOP",
-//     options: {
-//         trustServerCertificate: true,
-//         trustedConnection: false,
-//         enableArithAbort: true,
-//         //instancename:
-//     },
-//     port:1433 
-// }
-
 app.get('/', async (req, res) =>{
     try {
         const pool = await connectToSystemDatabase(); // Kết nối tới DB
@@ -49,5 +35,15 @@ app.get('/api/DonHang', async(req, res)=>{
     } catch (err) {
         res.status(500).send(err.message); // Nếu có lỗi
 }})
+
+app.get('/api/page3', async(req, res)=>{
+  try{
+      const pool = await connectToSystemDatabase();
+      const result = await pool.request().query('SELECT * FROM ChiTietDonHang');
+      res.json(result.recordset); // Trả về dữ liệu dưới dạng JSON
+  } catch (err) {
+      res.status(500).send(err.message); // Nếu có lỗi
+}})
+
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
