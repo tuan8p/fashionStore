@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Row, Col, DatePicker, Form } from "antd";
 import dayjs from 'dayjs';
+import axios from 'axios';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
+
 const Page3 = () => {
-    const [filteredData, setFilteredData] = useState([]);
+    //const [filteredData, setFilteredData] = useState([]);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [loading, setLoading] = useState(false);
-
+    const [data, setData] = useState([]);
+    // useEffect(() => {
+    //     fetch('http://localhost:5000/api/page3')
+    //         .then(response => response.json())
+    //         .then(data => setData(data))  // Cập nhật state data
+    //         .catch(error => console.error('Error fetching data:', error));
+    //   }, []); 
     const fetchData = async (startDate, endDate) => {
         setLoading(true);
         try {
-            const response = await fetch('https://api.example.com/orders', {
+            const response = await axios.post('http://localhost:5000/api/page3', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -24,41 +32,43 @@ const Page3 = () => {
                 }),
             });
             const result = await response.json();
-            setFilteredData(result);
+            console.log('API Result:', result); // Kiểm tra kết quả API
+            setData(result);  // Cập nhật dữ liệu sau khi nhận từ API
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
             setLoading(false);
         }
     };
-
     useEffect(() => {
-        fetchData();
+        fetchData();  // Lúc này không truyền startDate và endDate
     }, []);
-
     const columns = [
         {
             title: "Mã đơn hàng",
-            dataIndex: "id",
-            key: "id",
+            dataIndex: "ma_don_hang",
+            key: "ma_don_hang",
         },
         {
             title: "Mã sản phẩm",
-            dataIndex: "productId",
-            key: "productId",
+            dataIndex: "ma_san_pham",
+            key: "ma_san_pham",
         },
         {
             title: "Số lượng",
-            dataIndex: "count",
-            key: "count",
+            dataIndex: "so_luong",
+            key: "so_luong",
             responsive: ['md'],
         },
         {
             title: "Ngày đặt hàng",
-            dataIndex: "orderDate",
-            key: "orderDate",
+            //dataIndex: "ngay_dat_hang",
+            //key: "ngay_dat_hang",
             responsive: ['lg'],
-            render: (text) => dayjs(text, "YYYY-MM-DD").format("DD/MM/YYYY"),
+            render: (text) => {
+                console.log('Ngày đặt hàng:', text); // Kiểm tra giá trị text
+                return text ? dayjs(text).format("DD/MM/YYYY") : ''; // Hiển thị rỗng nếu text là null
+              },
         },
         {
             title: "Thành tiền",
@@ -69,7 +79,7 @@ const Page3 = () => {
     ];
 
     const handleFilter = () => {
-        fetchData(startDate, endDate);
+        fetchData(startDate, endDate);  // Gọi hàm fetchData với startDate và endDate
     };
 
     return (
@@ -92,16 +102,16 @@ const Page3 = () => {
                                 onChange={(date) => setEndDate(date ? date.format("DD/MM/YYYY") : null)}
                             />
                         </Form.Item>
-                        <Form.Item>
+                        <Form.Item>{/* }*/}
                             <Button type="primary" onClick={handleFilter}>Filter</Button>
                         </Form.Item>
                     </Form>
                 </Col>
             </Row>
             <Table
-                dataSource={filteredData}
+                dataSource={data}
                 columns={columns}
-                rowKey="id"
+                rowKey="ma_don_hang"
                 style={{ marginTop: '20px' }}
                 pagination={{ pageSize: 10 }}
                 scroll={{ x: '100%' }}
