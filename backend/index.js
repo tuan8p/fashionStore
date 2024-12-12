@@ -49,5 +49,26 @@ app.get('/api/DonHang', async(req, res)=>{
     } catch (err) {
         res.status(500).send(err.message); // Nếu có lỗi
 }})
+
+app.get('/api/SanPham', async(req, res)=>{
+  try{
+      const pool = await connectToSystemDatabase();
+      const result = await pool.request().query('SELECT * FROM SanPham');
+      res.json(result.recordset); // Trả về dữ liệu dưới dạng JSON
+  } catch (err) {
+      res.status(500).send(err.message); // Nếu có lỗi
+}})
+
+app.get('/api/ChiTietDonHang', async(req, res)=>{
+  try{
+      const pool = await connectToSystemDatabase();
+      const result = await pool.request().query('SELECT * FROM ChiTietDonHang');
+      res.json(result.recordset); // Trả về dữ liệu dưới dạng JSON
+  } catch (err) {
+      res.status(500).send(err.message); // Nếu có lỗi
+}})
+
+
+
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

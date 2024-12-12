@@ -5,6 +5,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Page1 from './components/page1';
 import Page2 from './components/page2';
 import Page3 from './components/page3';
+import Page4 from './components/page4';
 
 import {AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
@@ -69,6 +70,9 @@ function App() {
             <Menu.Item key="3" icon={<AppstoreOutlined />}>
               <Link to="/3">Page 3</Link>
             </Menu.Item>
+            <Menu.Item key="4" icon={<AppstoreOutlined />}>
+              <Link to="/4">Page 4</Link>
+            </Menu.Item>
           </Menu>
           </div>
         </Sider>
@@ -80,6 +84,7 @@ function App() {
               <Route path="/" element={<Page1 />} />
               <Route path="/2" element={<Page2 />} />
               <Route path="/3" element={<Page3 />} />
+              <Route path="/4" element={<Page4 />} />
             </Routes>
           </Content>
         </Layout>
