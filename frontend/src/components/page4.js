@@ -8,42 +8,42 @@ const Page4 = () => {
     const [currentProduct, setCurrentProduct] = useState(null);
     const [form] = Form.useForm();
 
-    useEffect(() => {
-        // Tải danh sách sản phẩm từ API
-        const fetchProducts = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/products');
-                setProducts(response.data); // Lưu danh sách sản phẩm vào state
-            } catch (error) {
-                console.error('Error fetching products:', error);
-                message.error('Lỗi khi tải danh sách sản phẩm');
-            }
-        };
-
-        fetchProducts();
-    }, []);
-
-    // Hàm gọi API để lấy điểm trung bình
-    const fetchAverageRating = async (productId) => {
+    const fetchProducts = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/products/${productId}/average-rating`);
-            return response.data.diem_trung_binh;
+            const response = await axios.get('http://localhost:5000/api/products');
+            setProducts(response.data);
         } catch (error) {
-            console.error('Error fetching average rating:', error);
-            return 'Chưa có đánh giá';
+            console.error('Error fetching products:', error);
+            message.error('Lỗi khi tải danh sách sản phẩm');
         }
     };
 
+    useEffect(() => {
+        fetchProducts(); 
+    }, []);
+
+    
+    // const fetchAverageRating = async (ma_san_pham) => {
+    //     try {
+    //         const response = await axios.get(`http://localhost:5000/api/products/${ma_san_pham}/average-rating`);
+    //         return response.data.diem_trung_binh || 'Chưa có đánh giá';
+    //     } catch (error) {
+    //         console.error('Error fetching average rating:', error);
+    //         return 'Chưa có đánh giá';
+    //     }
+    // };
+
     // Cập nhật điểm trung bình cho sản phẩm khi mở modal
-    const updateProductRating = async (product) => {
-        const averageRating = await fetchAverageRating(product.ma_san_pham);
-        const updatedProduct = { ...product, diem_trung_binh: averageRating };
-        setProducts((prev) =>
-            prev.map((p) => (p.ma_san_pham === updatedProduct.ma_san_pham ? updatedProduct : p))
-        );
-    };
+    // const updateProductRating = async (product) => {
+    //     const averageRating = await fetchAverageRating(product.ma_san_pham);
+    //     const updatedProduct = { ...product, diem_trung_binh: averageRating };
+    //     setProducts((prev) =>
+    //         prev.map((p) => (p.ma_san_pham === updatedProduct.ma_san_pham ? updatedProduct : p))
+    //     );
+    // };
 
     // Cột bảng
+    
     const columns = [
         {
             title: 'Mã sản phẩm',
@@ -57,21 +57,21 @@ const Page4 = () => {
         },
         {
             title: 'Mô tả sản phẩm',
-            dataIndex: 'mo_ta',
-            key: 'mo_ta',
+            dataIndex: 'mo_ta_san_pham',
+            key: 'mo_ta_san_pham',
         },
         {
             title: 'Đơn giá',
             dataIndex: 'don_gia',
             key: 'don_gia',
-            render: (price) => `${price.toLocaleString()} VNĐ`,
+            render: (price) => `${price.toLocaleString()} VNĐ`,  // Hiển thị giá theo định dạng VNĐ
         },
         {
             title: 'Điểm đánh giá',
             dataIndex: 'diem_trung_binh',
             key: 'diem_trung_binh',
             render: (rating) => (
-                <Tag color={rating === 'Chưa có đánh giá' ? 'red' : 'green'}>{rating}</Tag>
+                <Tag color={rating === 'Chưa có đánh giá' ? 'red' : 'green'}>{rating}</Tag> // Hiển thị điểm đánh giá
             ),
         },
     ];
@@ -82,7 +82,7 @@ const Page4 = () => {
         form.resetFields();
         if (product) {
             form.setFieldsValue(product);
-            updateProductRating(product); // Cập nhật điểm trung bình khi mở modal
+            //updateProductRating(product); // Cập nhật điểm trung bình khi mở modal
         }
         setIsModalVisible(true);
     };
@@ -131,7 +131,7 @@ const Page4 = () => {
             />
             <Modal
                 title={modalTitle}
-                visible={isModalVisible}
+                open={isModalVisible}
                 onCancel={handleCancel}
                 footer={null}
             >

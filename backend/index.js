@@ -181,5 +181,49 @@ app.post('/api/so-luong-tinh-trang-don-hang', async (req, res) => {
     }
 });
 
+app.get('/api/products', async (req, res) => {
+  try {
+      const pool = await connectToSystemDatabase();
+
+      const result = await pool.request().query(`
+        SELECT ma_san_pham, ten_san_pham, mo_ta_san_pham, don_gia
+        FROM dbo.SanPham
+    `);
+
+    console.log('Products retrieved:', result.recordset);
+
+    // Sửa lại Promise.all và chắc chắn rằng `product` được truy cập đúng cách
+    const products = await Promise.all(result.recordset.map(async (product) => {
+      try {
+        const ratingResult = await pool.request()
+            .input('ma_san_pham', sql.VarChar(20), product.ma_san_pham)
+            .execute('dbo.sp_CalculateAverageRating');
+
+        console.log('Rating result for product', product.ma_san_pham, ratingResult.recordset);
+
+        const averageRating = ratingResult.recordset[0]?.diem_trung_binh || 'Chưa có đánh giá';
+        return {
+          ...product,
+          diem_trung_binh: averageRating // Đảm bảo `diem_trung_binh` được gán đúng
+        };
+      } catch (error) {
+        console.error('Error fetching rating for product', product.ma_san_pham, error);
+        return {
+          ...product,
+          diem_trung_binh: 'Error fetching rating' // Trả về lỗi nếu không lấy được điểm
+        };
+      }
+    }));
+
+    console.log('Final products data with rating:', products);
+
+    // Trả về danh sách sản phẩm với điểm trung bình
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products and ratings:', error);
+    res.status(500).json({ error: 'Lỗi khi lấy thông tin sản phẩm và điểm đánh giá.' });
+  }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
