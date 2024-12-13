@@ -1,15 +1,13 @@
 import express from 'express';
 import cors from 'cors'; 
-import bodyParser from 'body-parser';
 import sql from 'mssql'; 
 import connectToSystemDatabase from './db.js';
 
 const app = express();
 app.use(cors({
   origin: 'http://localhost:3000', 
-}));  // Cho phép tất cả các nguồn
+}));  
 app.use(express.json());
-//app.use(bodyParser.json());
 const port = 5000;
 
 app.get('/', async (req, res) =>{
@@ -152,6 +150,35 @@ app.post('/api/calculate-order-total', async (req, res) => {
     console.error('Error calculating order total:', error);
     res.status(500).json({ error: 'Có lỗi xảy ra khi tính tổng đơn hàng', details: error.message });
   }
+});
+
+app.post('/api/so-luong-tinh-trang-don-hang', async (req, res) => {
+  const { ma_tai_khoan, ngay_bat_dau, ngay_ket_thuc } = req.body;
+  console.log('Received data:', req.body);
+
+  try {
+
+    // Kết nối đến cơ sở dữ liệu
+    const pool = await connectToSystemDatabase();
+
+    // Thực thi thủ tục
+    const result = await pool.request()
+      .input('ma_tai_khoan', sql.VarChar(20), ma_tai_khoan || null)
+      .input('ngay_bat_dau', sql.Date, ngay_bat_dau || null)
+      .input('ngay_ket_thuc', sql.Date, ngay_ket_thuc || null)
+      .execute('dbo.SoLuongTinhTrangDonHang');  // Gọi thủ tục đã tạo trong SQL
+
+    // Trả về kết quả cho frontend
+    const rows = result.recordsets;  // Kết quả của procedure trả về dưới dạng recordsets
+        if (rows && rows.length > 0) {
+            res.status(200).json({ data: rows });
+        } else {
+            res.status(404).json({ error: 'Không có dữ liệu' });
+        }
+    } catch (error) {
+        console.error('Error calculating order data:', error);
+        res.status(500).json({ error: 'Có lỗi khi tính tổng đơn hàng', details: error.message });
+    }
 });
 
 const PORT = 5000;
