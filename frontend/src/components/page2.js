@@ -39,12 +39,13 @@ const Page2 = () => {
             // };
             // });
             // setFilteredData(result);
-            let result;
+            let result = [];
             //---
             if (ma_tai_khoan) {
                 // Nếu có mã tài khoản, chỉ hiển thị dữ liệu tổng quan
-                const summary = summaryData[0];
-                const result = summary ? [{
+                const summary = summaryData.find(item => item.ma_tai_khoan === ma_tai_khoan);
+                console.log("ma-tai_khoan: ",summary.ma_tai_khoan);
+                result = summary ? [{
                     ma_tai_khoan: summary.ma_tai_khoan,
                     tong_don_hang: summary.tong_don_hang,
                     so_dơn_dang_xu_ly: summary.so_dơn_dang_xu_ly,
@@ -70,7 +71,7 @@ const Page2 = () => {
                 });
             }
     
-            console.log("Mapped Result: ", result);
+            console.log("Result: ", result);
             
             setFilteredData(result);
             
