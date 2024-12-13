@@ -1,15 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import { Table, Tag, Button, Row, Col, Modal, Input, DatePicker, Select, Form, message} from "antd";
+import { Table, Tag, Button, Row, Col, message} from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import axios from 'axios';
 import ChangeOrderModal from '../components/ChangeOrderModal';
 import CreateOrderModal from '../components/CreateOrderModal';
 import DeleteOrderModal from '../components/DeleteOrderModal';
-
-
-const {Option} = Select;
-
 
 const useWindowSize = () => {
   const [size, setSize] = useState({ width: window.innerWidth });
@@ -53,6 +49,7 @@ const Page1 = () => {
         title: "Mã đơn hàng",
         dataIndex: 'ma_don_hang',
         key: 'ma_don_hang',
+        width: 100,
       },
       {
         title: 'Mã giỏ hàng',
@@ -69,6 +66,7 @@ const Page1 = () => {
         title: "Mã thanh toán",
         dataIndex: "ma_thanh_toan",
         key: "ma_thanh_toan",
+        width: 100,
         responsive: ['md'],
       },
       {
@@ -76,12 +74,14 @@ const Page1 = () => {
         dataIndex: "ma_van_chuyen",
         key: "ma_van_chuyen",
         responsive: ['lg'],
+        width: 100,
       },
       {
         title: "Mã khuyến mãi",
         dataIndex: "ma_khuyen_mai",
         key: "ma_khuyen_mai",
         responsive: ['lg'],
+        width: 100,
       },
       {
         title: "Số nhà",
@@ -210,32 +210,29 @@ const Page1 = () => {
     };
     
     // Hàm xử lý khi bấm "Xác nhận hủy" trong modal
-    const handleConfirmDelete = async () => {
-      if (!currentOrder?.ma_don_hang) {
-        console.error('Order ID is missing');
-        return;
-      }
+    // const handleConfirmDelete = async () => {
+    //   if (!currentOrder?.ma_don_hang) {
+    //     console.error('Order ID is missing');
+    //     return;
+    //   }
     
-      try {
-        const response = await axios.post('http://localhost:5000/api/delete-order', {
-          ma_don_hang: currentOrder.ma_don_hang,
-        });
+    //   try {
+    //     const response = await axios.post('http://localhost:5000/api/delete-order', {
+    //       ma_don_hang: currentOrder.ma_don_hang,
+    //     });
     
-        if (response.status === 200) {
-          message.success('Đơn hàng đã được xóa thành công!');
-          await fetchOrders(); // Tải lại danh sách đơn hàng
-        } else {
-          message.error('Không thể xóa đơn hàng. Vui lòng thử lại!');
-        }
-      } catch (error) {
-        console.error('Error deleting order:', error);
-        if (error.response && error.response.data && error.response.data.error) {
-          message.error(error.response.data.error);  // Hiển thị thông báo chi tiết từ backend
-        } else {
-          message.error('Có lỗi xảy ra khi xóa đơn hàng!');
-        }
-      }
-    };
+    //     if (response.status === 200) {
+    //       message.success('Đơn hàng đã được xóa thành công!');
+    //       fetchOrders(); // Tải lại danh sách đơn hàng
+    //       setModalVisible(false); 
+    //     } else {
+    //       message.error('Không thể xóa đơn hàng. Vui lòng thử lại!');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error deleting order:', error);
+    //     //alert("Không thể xóa đơn hàng vì", error)
+    //   }
+    // };
     
     const showModal = (modalType, order = null) => {
       setModalVisible(modalType); // Chỉ gọi một lần để thay đổi trạng thái modal
@@ -281,23 +278,11 @@ const Page1 = () => {
         scroll={{ x: true }}
       />
 
-    {/* <Modal
-        title="Xác nhận hủy đơn hàng ?"
-        open = {modalVisible === 'deleteOrder'}
-        onOk={handleConfirm}
-        onCancel={handleCancel}
-        okText="Xác nhận"
-        cancelText="Quay lại"
-        width={width > 768 ? 600 : "90%"}
-    >
-        <p>Bạn có chắc chắn muốn hủy đơn hàng không?</p>
-    </Modal> */}
-
     <DeleteOrderModal
       visible={modalVisible === 'deleteOrder'}
       onCancel={() => setModalVisible(null)} // Đóng modal khi hủy
-      onConfirm={handleConfirmDelete} // Gọi hàm xóa khi xác nhận
       orderDetails={currentOrder} // Truyền thông tin đơn hàng hiện tại
+      refreshOrders={fetchOrders}
     />
 
     {/* <Modal

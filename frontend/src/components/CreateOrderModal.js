@@ -10,18 +10,24 @@ const CreateOrderModal = ({ visible, onCancel, onCreate }) => {
   const [form] = Form.useForm();
 
   const handleCreateOrder = async (values) => {
+    if (values.ma_tai_khoan.length !== 10) {
+        message.error('Mã tài khoản phải có đủ 10 ký tự!');
+        return;
+    }
     setLoading(true);
     try {
       // Gửi yêu cầu tạo đơn hàng
       const response = await axios.post('http://localhost:5000/api/create-order', {
         ma_tai_khoan: values.ma_tai_khoan,
-        ma_khuyen_mai: values.ma_khuyen_mai
+        ma_khuyen_mai: values.ma_khuyen_mai || null,
+        phuong_thuc: values.phuong_thuc,
       });
-
+      
       if (response.status === 200) {
         message.success('Đơn hàng đã được tạo thành công!');
         onCreate(); // Gọi hàm để cập nhật dữ liệu trong component cha
         form.resetFields(); // Reset form
+        onCancel();
       } else {
         message.error('Không thể tạo đơn hàng. Vui lòng thử lại!');
       }
@@ -55,33 +61,16 @@ const CreateOrderModal = ({ visible, onCancel, onCreate }) => {
         <Form.Item label="Mã khuyến mãi" name="ma_khuyen_mai">
             <Input />
           </Form.Item>
-          <Form.Item label="Số nhà" name="so_nha">
-            <Input disabled/>
-          </Form.Item>
-          <Form.Item label="Quận/Huyện" name="quan_huyen">
-            <Input disabled/>
-          </Form.Item>
-          <Form.Item label="Tỉnh/ Thành phố" name="thanh_pho">
-            <Input disabled/>
-          </Form.Item>
-          <Form.Item label="Tình trạng thanh toán" name="tinh_trang_thanh_toan">
-            <Select disabled>
-              <Option value="Đã thanh toán">Đã thanh toán</Option>
-              <Option value="Đã hoàn tiền">Đã hoàn tiền</Option>
-              <Option value="Chưa thanh toán">Chưa thanh toán</Option>
+
+          <Form.Item label="Phương thức thanh toán" name="phuong_thuc" rules={[{ required: true, message: 'Vui lòng chọn phương thức thanh toán!' }]}>
+            <Select>
+              <Option value="ATM">ATM</Option>
+              <Option value="Ebanking">Ebanking</Option>
+              <Option value="MoMo">MoMo</Option>
+              <Option value="COD">COD</Option>
             </Select>
           </Form.Item > 
-          <Form.Item label="Ngày đặt hàng" name="ngay_dat_hang">
-            <DatePicker disabled />
-          </Form.Item>
-          <Form.Item label="Ngày nhận hàng" name="ngay_nhan_hang">
-            <DatePicker disabled/>
-          </Form.Item>
-          <Form.Item label="Trạng thái đơn hàng">
-            <Select disabled >
-              <Option value="Đang xử lý">Đang xử lý</Option>
-            </Select>
-          </Form.Item>
+          
 
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
