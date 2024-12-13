@@ -25,21 +25,55 @@ const Page2 = () => {
             const orderData = response.data.data[0] || [];  // Dữ liệu đơn hàng
             const summaryData = response.data.data[1] || []; // Dữ liệu tổng quan
 
-            const result = orderData.map(order => {
-                const summary = summaryData[0]; // Chỉ có một đối tượng trong mảng summaryData
-                return {
-                    ...order, 
-                    ma_tai_khoan: summary? summary.ma_tai_khoan:0,
-                    tong_don_hang: summary ? summary.tong_don_hang : 0,
-                    so_don_dang_xu_ly: summary ? summary.so_don_dang_xu_ly : 0,
-                    so_don_dang_giao: summary ? summary.so_don_dang_giao : 0,
-                    so_don_da_giao: summary ? summary.so_don_da_giao : 0,
-                    so_don_huy: summary ? summary.so_don_huy : 0,
-                    so_don_hoan_tra: summary ? summary.so_don_hoan_tra : 0
-                };
-            });
-
-            setFilteredData(result); 
+            // const result = orderData.map(order => {
+            //     const summary = summaryData[0]; // Chỉ có một đối tượng trong mảng summaryData
+            //     return {
+            //         ...order, 
+            //         ma_tai_khoan: summary? summary.ma_tai_khoan: 0,
+            //         tong_don_hang: summary ? summary.tong_don_hang : 0,
+            //         so_dơn_dang_xu_ly: summary ? summary.so_dơn_dang_xu_ly : 0,
+            //         so_don_dang_giao: summary ? summary.so_don_dang_giao : 0,
+            //         so_don_da_giao: summary ? summary.so_don_da_giao : 0,
+            //         so_don_huy: summary ? summary.so_don_huy : 0,
+            //         so_don_hoan_tra: summary ? summary.so_don_hoan_tra : 0
+            // };
+            // });
+            // setFilteredData(result);
+            let result;
+            //---
+            if (ma_tai_khoan) {
+                // Nếu có mã tài khoản, chỉ hiển thị dữ liệu tổng quan
+                const summary = summaryData[0];
+                const result = summary ? [{
+                    ma_tai_khoan: summary.ma_tai_khoan,
+                    tong_don_hang: summary.tong_don_hang,
+                    so_dơn_dang_xu_ly: summary.so_dơn_dang_xu_ly,
+                    so_don_dang_giao: summary.so_don_dang_giao,
+                    so_don_da_giao: summary.so_don_da_giao,
+                    so_don_huy: summary.so_don_huy,
+                    so_don_hoan_tra: summary.so_don_hoan_tra,
+                }] : [];
+                setFilteredData(result);
+            } else {
+                // Nếu không có mã tài khoản, hiển thị toàn bộ danh sách
+                result = summaryData.map(order => {
+                    const summary = summaryData.find(item => item.ma_tai_khoan === order.ma_tai_khoan) || {};
+                    return {
+                        ...order,
+                        tong_don_hang: summary.tong_don_hang || 0,
+                        so_dơn_dang_xu_ly: summary.so_dơn_dang_xu_ly || 0,
+                        so_don_dang_giao: summary.so_don_dang_giao || 0,
+                        so_don_da_giao: summary.so_don_da_giao || 0,
+                        so_don_huy: summary.so_don_huy || 0,
+                        so_don_hoan_tra: summary.so_don_hoan_tra || 0,
+                    };
+                });
+            }
+    
+            console.log("Mapped Result: ", result);
+            
+            setFilteredData(result);
+            
         } catch (error) {
             console.error('Error fetching order data:', error);
         } finally {
@@ -65,8 +99,8 @@ const Page2 = () => {
         },
         {
             title: "Số đơn đang xử lý",
-            dataIndex: "so_don_dang_xu_ly",
-            key: "so_don_dang_xu_ly",
+            dataIndex: "so_dơn_dang_xu_ly",
+            key: "so_dơn_dang_xu_ly",
             responsive: ['md'],
         },
         {

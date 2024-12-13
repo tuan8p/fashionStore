@@ -143,7 +143,7 @@ app.post('/api/calculate-order-total', async (req, res) => {
       output: rows,
     });
   } else {
-    // Nếu không có dữ liệu hoặc không phải mảng
+
     res.status(404).json({ error: 'Không tìm thấy dữ liệu trong khoảng thời gian này' });
   }
   } catch (error) {
@@ -166,7 +166,7 @@ app.post('/api/so-luong-tinh-trang-don-hang', async (req, res) => {
       .input('ma_tai_khoan', sql.VarChar(20), ma_tai_khoan || null)
       .input('ngay_bat_dau', sql.Date, ngay_bat_dau || null)
       .input('ngay_ket_thuc', sql.Date, ngay_ket_thuc || null)
-      .execute('dbo.SoLuongTinhTrangDonHang');  // Gọi thủ tục đã tạo trong SQL
+      .execute('dbo.SoLuongTinhTrangDonHang');  
 
     // Trả về kết quả cho frontend
     const rows = result.recordsets;  // Kết quả của procedure trả về dưới dạng recordsets
