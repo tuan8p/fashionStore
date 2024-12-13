@@ -40,36 +40,6 @@ app.get('/api/DonHang', async(req, res)=>{
         res.status(500).send(err.message); // Nếu có lỗi
 }})
 
-// app.post('/api/page3', async(req, res)=>{
-//   const { startDate, endDate } = req.body;
-//   console.log("Received dates:", startDate, endDate);
-//   try{
-//     const pool = await connectToSystemDatabase();
-//     const result = await pool.request().query('SELECT * FROM ChiTietDonHang');
-//     res.json(result.recordset); // Trả về dữ liệu dưới dạng JSON
-//   } catch (err) {
-//       res.status(500).send(err.message);
-//   }
-//   fetchDataFromDatabase(res,startDate, endDate)
-//         .then((result) => {
-//             res.json(result); // Trả dữ liệu về cho frontend dưới dạng JSON
-//         })
-//         .catch((error) => {
-//             res.status(500).json({ error: 'Something went wrong' }); // Nếu có lỗi, trả lỗi
-//         });
-// })
-
-// const fetchDataFromDatabase = (mockData,startDate, endDate) => {
-//   return new Promise((resolve) => {
-//     // Giả lập lọc dữ liệu theo startDate và endDate (cần chuyển đổi ngày từ string nếu cần)
-//     const filteredData = mockData.filter(item => {
-//         const itemDate = new Date(item.ngay_dat_hang);
-//         return (!startDate || itemDate >= new Date(startDate)) && (!endDate || itemDate <= new Date(endDate));
-//     });
-
-//     resolve(filteredData); // Trả về dữ liệu đã lọc
-// });
-// }
 app.post(`/api/update-order-status`, async (req, res) => {
   const { ma_don_hang, trang_thai_don_hang } = req.body;
   console.log('Received parameters:', ma_don_hang, trang_thai_don_hang);
@@ -143,6 +113,46 @@ app.post('/api/create-order', async (req, res) => {
   }
 });
 
+// API gọi hàm TinhTongTienDonHang
+app.post('/api/calculate-order-total', async (req, res) => {
+  const { startDate, endDate } = req.body;
+  console.log('Received Start Date:', startDate);  // In giá trị startDate từ frontend
+  console.log('Received End Date:', endDate);
+  // Kiểm tra thông tin đầu vào
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: 'Vui lòng cung cấp tham số: NgayBatDau và NgayKetThuc' });
+  }
+
+  try {
+    const pool = await connectToSystemDatabase();
+    const result = await pool.request()
+      .input('NgayBatDau', sql.Date, startDate)
+      .input('NgayKetThuc', sql.Date, endDate)
+      .query(`
+        SELECT * 
+        FROM dbo.TinhTongTienDonHang(@NgayBatDau, @NgayKetThuc)
+      `);
+
+    const rows = result.recordset;
+
+    // Gửi phản hồi kèm thông tin đầu vào và kết quả
+    if (Array.isArray(rows) && rows.length > 0) {
+    res.status(200).json({
+      input: {
+        startDate,
+        endDate,
+      },
+      output: rows,
+    });
+  } else {
+    // Nếu không có dữ liệu hoặc không phải mảng
+    res.status(404).json({ error: 'Không tìm thấy dữ liệu trong khoảng thời gian này' });
+  }
+  } catch (error) {
+    console.error('Error calculating order total:', error);
+    res.status(500).json({ error: 'Có lỗi xảy ra khi tính tổng đơn hàng', details: error.message });
+  }
+});
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
