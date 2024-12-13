@@ -1,8 +1,8 @@
 import sql from 'mssql';
 
 const config = {
-    user: 'sa',
-    password: '1634',
+    user: 'tuan8p',
+    password: 'tuan8p',
     server: 'localhost',
     database: 'LOLYPOP',
     options: {
