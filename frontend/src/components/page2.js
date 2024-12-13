@@ -1,89 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Row, Col, DatePicker, Form, Input } from "antd";
 import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-dayjs.extend(customParseFormat);
+import axios from 'axios';
 
 const Page2 = () => {
-    const [filteredData, setFilteredData] = useState([]);
+    const [filteredData, setFilteredData] = useState([]); // Dữ liệu bảng
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const [accountId, setAccountId] = useState("");
+    const [accountId, setAccountId] = useState("");  // Mã tài khoản
     const [loading, setLoading] = useState(false);
 
-    const fetchData = async (startDate, endDate, accountId) => {
+    // Hàm fetchData để lấy dữ liệu từ API
+    const fetchData = async (ma_tai_khoan, ngay_bat_dau, ngay_ket_thuc) => {
         setLoading(true);
         try {
-            const response = await fetch('https://api.example.com/orders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    startDate: startDate ? dayjs(startDate, "DD/MM/YYYY").format("YYYY-MM-DD") : null,
-                    endDate: endDate ? dayjs(endDate, "DD/MM/YYYY").format("YYYY-MM-DD") : null,
-                    accountId: accountId || null,
-                }),
+            const startDate = ngay_bat_dau ? dayjs(ngay_bat_dau, "DD/MM/YYYY").format("YYYY-MM-DD"): null;
+            const endDate = ngay_ket_thuc ? dayjs(ngay_ket_thuc, "DD/MM/YYYY").format("YYYY-MM-DD"): null;
+            const response = await axios.post('http://localhost:5000/api/so-luong-tinh-trang-don-hang', {
+                ma_tai_khoan,
+                ngay_bat_dau: startDate, 
+                ngay_ket_thuc: endDate,
             });
-            const result = await response.json();
-            setFilteredData(result);
+            console.log("API Response: ", response.data);
+            const orderData = response.data.data[0] || [];  // Dữ liệu đơn hàng
+            const summaryData = response.data.data[1] || []; // Dữ liệu tổng quan
+
+            const result = orderData.map(order => {
+                const summary = summaryData[0]; // Chỉ có một đối tượng trong mảng summaryData
+                return {
+                    ...order, 
+                    ma_tai_khoan: summary? summary.ma_tai_khoan:0,
+                    tong_don_hang: summary ? summary.tong_don_hang : 0,
+                    so_don_dang_xu_ly: summary ? summary.so_don_dang_xu_ly : 0,
+                    so_don_dang_giao: summary ? summary.so_don_dang_giao : 0,
+                    so_don_da_giao: summary ? summary.so_don_da_giao : 0,
+                    so_don_huy: summary ? summary.so_don_huy : 0,
+                    so_don_hoan_tra: summary ? summary.so_don_hoan_tra : 0
+                };
+            });
+
+            setFilteredData(result); 
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching order data:', error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchData(accountId, startDate, endDate);
+    }, []); 
 
     const columns = [
         {
             title: "Mã tài khoản",
-            dataIndex: "accountId",
-            key: "accountId",
+            dataIndex: "ma_tai_khoan", 
+            key: "ma_tai_khoan",
         },
         {
             title: "Tổng đơn hàng",
-            dataIndex: "total orders",
-            key: "total orders",
+            dataIndex: "tong_don_hang",
+            key: "tong_don_hang",
             responsive: ['md'],
         },
         {
             title: "Số đơn đang xử lý",
-            dataIndex: "processing orders",
-            key: "processing orders",
+            dataIndex: "so_don_dang_xu_ly",
+            key: "so_don_dang_xu_ly",
             responsive: ['md'],
         },
         {
             title: "Số đơn đang giao",
-            dataIndex: "delivering orders",
-            key: "delivering orders",
+            dataIndex: "so_don_dang_giao",
+            key: "so_don_dang_giao",
             responsive: ['md'],
         },
         {
             title: "Số đơn đã giao",
-            dataIndex: "delivered orders",
-            key: "delivered orders",
+            dataIndex: "so_don_da_giao",
+            key: "so_don_da_giao",
             responsive: ['md'],
         },
         {
             title: "Số đơn đã hủy",
-            dataIndex: "cancelled orders",
-            key: "cancelled orders",
+            dataIndex: "so_don_huy",
+            key: "so_don_huy",
             responsive: ['md'],
         },
         {
             title: "Số đơn đã hoàn trả",
-            dataIndex: "returned orders",
-            key: "returned orders",
+            dataIndex: "so_don_hoan_tra",
+            key: "so_don_hoan_tra",
             responsive: ['md'],
         }
     ];
+    
 
+    // Hàm gọi lại API khi có thay đổi trong form lọc
     const handleFilter = () => {
-        fetchData(startDate, endDate, accountId);
+        fetchData(accountId, startDate, endDate);  // Gọi hàm fetchData khi có thay đổi
     };
 
     return (
@@ -132,7 +147,7 @@ const Page2 = () => {
             <Table
                 dataSource={filteredData}
                 columns={columns}
-                rowKey="id"
+                rowKey="ma_tai_khoan" 
                 style={{ marginTop: '20px' }}
                 pagination={{ pageSize: 10 }}
                 scroll={{ x: '100%' }}

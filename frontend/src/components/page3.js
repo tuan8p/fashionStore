@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Row, Col, DatePicker, Form } from "antd";
+import { Table, Button, Row, Col, DatePicker, Form, message } from "antd";
 import dayjs from 'dayjs';
 import axios from 'axios';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -7,42 +7,41 @@ dayjs.extend(customParseFormat);
 
 
 const Page3 = () => {
-    //const [filteredData, setFilteredData] = useState([]);
+    const [data, setData] = useState([]);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState([]);
-    // useEffect(() => {
-    //     fetch('http://localhost:5000/api/page3')
-    //         .then(response => response.json())
-    //         .then(data => setData(data))  // Cập nhật state data
-    //         .catch(error => console.error('Error fetching data:', error));
-    //   }, []); 
+
     const fetchData = async (startDate, endDate) => {
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5000/api/page3', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    startDate: startDate ? dayjs(startDate, "DD/MM/YYYY").format("YYYY-MM-DD") : null,
-                    endDate: endDate ? dayjs(endDate, "DD/MM/YYYY").format("YYYY-MM-DD") : null,
-                }),
+            console.log('Start Date:', startDate);
+            console.log('End Date:', endDate);
+
+            const response = await axios.post('http://localhost:5000/api/calculate-order-total', {
+                startDate: startDate ? dayjs(startDate, "DD/MM/YYYY").format("YYYY-MM-DD") : null,
+                endDate: endDate ? dayjs(endDate, "DD/MM/YYYY").format("YYYY-MM-DD") : null,
             });
-            const result = await response.json();
-            console.log('API Result:', result); // Kiểm tra kết quả API
-            setData(result);  // Cập nhật dữ liệu sau khi nhận từ API
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false);
-        }
+            const result = response.data;
+            console.log('API Result:', result);
+            if (Array.isArray(result.output)) {
+                setData(result.output);  // Cập nhật dữ liệu sau khi nhận từ API
+              } else {
+                console.error('Dữ liệu không đúng định dạng');
+                message.error('Dữ liệu không hợp lệ.');
+              }
+            }  catch (error) {
+                console.error('Error fetching data:', error);
+                message.error('Có lỗi khi tải dữ liệu.');
+              } finally {
+                setLoading(false);
+              }
     };
+    
     useEffect(() => {
-        fetchData();  // Lúc này không truyền startDate và endDate
+        fetchData(); // Lấy dữ liệu mặc định không có ngày lọc
     }, []);
+
     const columns = [
         {
             title: "Mã đơn hàng",
@@ -60,22 +59,14 @@ const Page3 = () => {
             key: "so_luong",
             responsive: ['md'],
         },
-        {
-            title: "Ngày đặt hàng",
-            //dataIndex: "ngay_dat_hang",
-            //key: "ngay_dat_hang",
-            responsive: ['lg'],
-            render: (text) => {
-                console.log('Ngày đặt hàng:', text); // Kiểm tra giá trị text
-                return text ? dayjs(text).format("DD/MM/YYYY") : ''; // Hiển thị rỗng nếu text là null
-              },
+        { 
+            title: "Ngày đặt hàng", 
+            dataIndex: "ngay_dat_hang", 
+            key: "ngay_dat_hang", 
+            render: (text) => text ? dayjs(text).format("DD/MM/YYYY") : '', 
+            width: 150 
         },
-        {
-            title: "Thành tiền",
-            dataIndex: "total",
-            key: "total",
-            responsive: ['lg'],
-        },
+        { title: "Thành tiền", dataIndex: "thanh_tien", key: "thanh_tien", width: 150 },
     ];
 
     const handleFilter = () => {
@@ -102,7 +93,7 @@ const Page3 = () => {
                                 onChange={(date) => setEndDate(date ? date.format("DD/MM/YYYY") : null)}
                             />
                         </Form.Item>
-                        <Form.Item>{/* }*/}
+                        <Form.Item>
                             <Button type="primary" onClick={handleFilter}>Filter</Button>
                         </Form.Item>
                     </Form>
